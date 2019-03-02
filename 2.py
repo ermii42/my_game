@@ -14,7 +14,7 @@ def load_image(name, colorkey=None):
 
 class AnimatedSprite(pygame.sprite.Sprite):
     def __init__(self, sheet, columns, rows, x, y, f):
-        super(AnimatedSprite, self).__init__()
+        super().__init__(all_sprites)
         self.frames = []
         self.transform = False
         self.cut_sheet(sheet, columns, rows)
@@ -80,19 +80,38 @@ def start_screen():
                         return
         pygame.display.flip()
         clock.tick(100)
+def end_screen():
+    fon = load_image('game_over.jpg')
+    screen.blit(fon, (0, 0))
+    font = pygame.font.Font(None, 30)
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            #elif event.type == pygame.MOUSEBUTTONDOWN:
+                ## координаты кнопки
+                #if event.pos[0] in range(316, 625) and event.pos[1] in range(260, 365):
+                    #k = 1
+                    #fon = load_image('rule' + str(k) + '.png')
+                    #screen.blit(fon, (0, 0))                
+        pygame.display.flip()
+        clock.tick(100)
 
 
 class cat(AnimatedSprite):
     def __init__(self, sheet=load_image("m_k1.png"), columns=7, rows=2, x=300, y=515, f=10):
-        super(cat, self).__init__(sheet, columns, rows, x, y, f)
+        super().__init__(sheet, columns, rows, x, y, f)
         self.jump = 0
         self.down = False
+        self.mask = pygame.mask.from_surface(self.image)      
     
     def update(self):
         rect2 = kv(self.rect.x, self.rect.y, down=True)
         rect3 = kv(self.rect.x, self.rect.y, down=False)
         rect4 = kv(self.rect.x, self.rect.y, right=False)
-        rect5 = kv(self.rect.x, self.rect.y, right=True)
+        rect5 = kv(self.rect.x, self.rect.y, right=True)          
         if self.velocity.y < 0 and self.jump != 50 and not pygame.sprite.spritecollideany(rect3, horizontal_borders):
             self.jump += 1
             self.frames = []
@@ -109,7 +128,8 @@ class cat(AnimatedSprite):
             self.cut_sheet(sheet, 5, 2)
             self.rect = self.rect.move(x, y)
             self.animation_frames = 5
-        elif not pygame.sprite.spritecollideany(rect2, horizontal_borders) or self.down:
+        elif not pygame.sprite.spritecollideany(rect2, horizontal_borders) and (
+            not pygame.sprite.spritecollideany(rect2, horizontal_borders2) or self.down ):
             #ЗДЕСЬ НУЖНО ПРОЕРЯТЬ НА СТОЛКНОВЕНИЕ С ОБЪЕКТАМИ
             self.down = False
             if self.velocity.x != 0:
@@ -135,6 +155,7 @@ class cat(AnimatedSprite):
             self.cut_sheet(sheet, 5, 1)
             self.rect = self.rect.move(x, y)      
         else:
+            self.down = False
             self.jump = 0
             self.animation_frames = 10
             self.velocity.y = 0
@@ -152,10 +173,28 @@ class cat(AnimatedSprite):
             self.rect = self.rect.move(x, y)
         self.update_frame_dependent()
 
+class enemy(AnimatedSprite):
+    def __init__(self, sheet=load_image("en.png"), columns=1, rows=1, x=500, y=500, f=10):
+        super().__init__(sheet, columns, rows, x, y, f)
+        self.velocity.x = -1
+        self.mask = pygame.mask.from_surface(self.image)
+        
+    def update(self):
+        if pygame.sprite.collide_mask(self, player):
+            global running
+            running = False        
+        if pygame.sprite.spritecollideany(self, vertical_borders):
+            self.frames = []
+            self.velocity.x *= -1
+            self.transform = not self.transform
+            x, y = self.rect[:2]
+            self.cut_sheet(load_image("en.png"), 1, 1)
+            self.rect = self.rect.move(x, y)
+        self.update_frame_dependent()
 
 class kv(pygame.sprite.Sprite):
     def __init__(self, x1, y1, down=None, right=None):
-        super(kv, self).__init__()
+        super().__init__()
         if down != None:
             if down:
                 self.image = pygame.Surface([100-10, 2])
@@ -174,59 +213,72 @@ class kv(pygame.sprite.Sprite):
 
 class Border(pygame.sprite.Sprite):
     # строго вертикальный или строго горизонтальный отрезок
-    def __init__(self, x1, y1, x2, y2):
+    def __init__(self, x1, y1, x2, y2, ability=False):
         super().__init__(all_sprites)
-        #super(Border, self).__init__()
-        if x1 == x2:  # вертикальная стенка
-            self.add(vertical_borders)
-            self.image = pygame.Surface([1, y2 - y1])
-            self.rect = pygame.Rect(x1, y1, 1, y2 - y1)
-        else:  # горизонтальная стенка
-            self.add(horizontal_borders)
+        #super().__init__()
+        if ability:
+            self.add(horizontal_borders2)
             self.image = pygame.Surface([x2 - x1, 1])
             self.rect = pygame.Rect(x1, y1, x2 - x1, 1)
+            self.image.fill(pygame.Color('green'))
+        else:
+            if x1 == x2:  # вертикальная стенка
+                self.add(vertical_borders)
+                self.image = pygame.Surface([1, y2 - y1])
+                self.rect = pygame.Rect(x1, y1, 1, y2 - y1)
+            else:  # горизонтальная стенка
+                self.add(horizontal_borders)
+                self.image = pygame.Surface([x2 - x1, 1])
+                self.rect = pygame.Rect(x1, y1, x2 - x1, 1)
 
-
-pygame.init()
-size = (1000, 600)
-running = True
-screen = pygame.display.set_mode(size)
-all_sprites = pygame.sprite.Group()
-clock = pygame.time.Clock()
-#start_screen()
-horizontal_borders = pygame.sprite.Group()
-vertical_borders = pygame.sprite.Group()
-Border(5, 5, 1000 - 5, 5)
-Border(5, 600 - 5, 1000 - 5, 600 - 5)
-Border(5, 500, 400, 500)
-Border(5, 5, 5, 600 - 5)
-player = cat()
-all_sprites.add(player)
-Border(1000 - 5, 5, 1000 - 5, 600 - 5)
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_d:
-                player.velocity.x = 3
-                player.index = 0
-            elif event.key == pygame.K_a:
-                player.velocity.x = -3
-                player.index = 0
-            elif event.key == pygame.K_s:
-                player.down = True
-            elif event.key == pygame.K_w:
-                player.velocity.y = -2
-                player.index = 0
-        elif event.type == pygame.KEYUP:
-            if event.key == pygame.K_d or event.key == pygame.K_a:
-                player.velocity.x = 0
-            elif event.key == pygame.K_w or event.key == pygame.K_s:
-                player.velocity.y = 0
-    screen.fill(pygame.Color('white'))
-    player.update()
-    all_sprites.draw(screen)
-    clock.tick(100)
-    pygame.display.flip()
+st = True
+while st:
+    pygame.init()
+    size = (1000, 600)
+    running = True
+    screen = pygame.display.set_mode(size)
+    clock = pygame.time.Clock()
+    all_sprites = pygame.sprite.Group()
+    start_screen()
+    enemys = pygame.sprite.Group(enemy())
+    horizontal_borders2 = pygame.sprite.Group()
+    horizontal_borders = pygame.sprite.Group()
+    vertical_borders = pygame.sprite.Group()
+    Border(5, 5, 1000 - 5, 5)
+    Border(5, 600 - 5, 1000 - 5, 600 - 5)
+    Border(5, 500, 400, 500, True)
+    Border(400, 500, 500, 500)
+    Border(5, 5, 5, 600 - 5)
+    player = cat()
+    Border(1000 - 5, 5, 1000 - 5, 600 - 5)
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                st = False
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_d:
+                    player.velocity.x = 3
+                    player.index = 0
+                elif event.key == pygame.K_a:
+                    player.velocity.x = -3
+                    player.index = 0
+                elif event.key == pygame.K_s:
+                    player.down = True
+                elif event.key == pygame.K_w:
+                    player.velocity.y = -2
+                    player.index = 0
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_d or event.key == pygame.K_a:
+                    player.velocity.x = 0
+                elif event.key == pygame.K_w or event.key == pygame.K_s:
+                    player.velocity.y = 0
+        screen.fill(pygame.Color('white'))
+        player.update()
+        enemys.update()
+        all_sprites.draw(screen)
+        clock.tick(100)
+        pygame.display.flip()
+    if st:
+        end_screen()
 pygame.quit()
