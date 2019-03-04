@@ -111,7 +111,8 @@ class cat(AnimatedSprite):
         self.above = kv(self.rect.x, self.rect.y, down=False)
         self.right = kv(self.rect.x, self.rect.y, right=True)
         self.left = kv(self.rect.x, self.rect.y, right=False)
-        self.count = 3
+        self.count = 0
+        self.nm = 0
     
     def update_constraints(self):
         self.below.update(self.rect.x, self.rect.y)
@@ -120,6 +121,9 @@ class cat(AnimatedSprite):
         self.left.update(self.rect.x, self.rect.y)
     
     def update(self):
+        if self.nm == 2:
+            global running
+            running = False
         self.update_constraints()
         self.movement()
         self.update_frame_dependent()
@@ -142,7 +146,7 @@ class cat(AnimatedSprite):
             self.rect = self.rect.move(x, y)
             self.animation_frames = 5
         elif not pygame.sprite.spritecollideany(self.below, horizontal_borders) and (
-            not pygame.sprite.spritecollideany(self.below, horizontal_borders2) or self.down ):
+            not pygame.sprite.spritecollideany(self.below, green_borders) or self.down ):
             # Столкновение с горизонтальными стенками
             self.down = False
             if self.velocity.x != 0 and pygame.sprite.spritecollideany(self.right, vertical_borders) and self.velocity.x > 0 or\
@@ -186,7 +190,7 @@ class cat(AnimatedSprite):
     
 class fireball(AnimatedSprite):
     def __init__(self, x, y, sheet=load_image("cn.png"), columns=1, rows=1, f=10):
-        super().__init__(sheet, columns, rows, x+20, y+20, f)
+        super().__init__(sheet, columns, rows, x + 20, y + 20, f)
         if player.left_turn:
             self.velocity.x = -4
         else:
@@ -231,6 +235,38 @@ class enemy(AnimatedSprite):
             self.cut_sheet(load_image("en.png"), 1, 1)
             self.rect = self.rect.move(x, y)
         self.update_frame_dependent()
+
+
+class potion(AnimatedSprite):
+    def __init__(self, x, y, sheet=load_image("p.png"), columns=1, rows=1, f=10):
+        super().__init__(sheet, columns, rows, x, y, f)
+        self.mask = pygame.mask.from_surface(self.image)
+        
+    def drink(self):
+        if pygame.sprite.collide_mask(self, player):
+            player.count += 3
+            all_sprites.remove(self)
+            potions.remove(self)
+    
+    def update(self):
+        self.drink()
+        self.update_frame_dependent()
+
+
+class thing(AnimatedSprite):
+    def __init__(self, sheet, x, y, columns=1, rows=1, f=10):
+        super().__init__(sheet, columns, rows, x, y, f)
+        self.mask = pygame.mask.from_surface(self.image)
+    
+    def taking(self):
+        if pygame.sprite.collide_mask(self, player):
+            player.nm += 1
+            all_sprites.remove(self)
+            things.remove(self)
+    
+    def update(self):
+        self.taking()
+        self.update_frame_dependent()    
 
 
 class kv(pygame.sprite.Sprite):
@@ -278,7 +314,7 @@ class Border(pygame.sprite.Sprite):
         super().__init__(all_sprites)
         #super().__init__()
         if ability:
-            self.add(horizontal_borders2)
+            self.add(green_borders)
             self.image = pygame.Surface([x2 - x1, 1])
             self.rect = pygame.Rect(x1, y1, x2 - x1, 1)
             self.image.fill(pygame.Color('green'))
@@ -302,8 +338,11 @@ while st:
     shot = None
     all_sprites = pygame.sprite.Group()
     #start_screen()
+    things = pygame.sprite.Group(thing(load_image('t.png'), 300, 500),
+                                 thing(load_image('t.png'), 700, 500))
     enemys = pygame.sprite.Group(enemy())
-    horizontal_borders2 = pygame.sprite.Group()
+    potions = pygame.sprite.Group(potion(400, 500))
+    green_borders = pygame.sprite.Group()
     horizontal_borders = pygame.sprite.Group()
     vertical_borders = pygame.sprite.Group()
     Border(5, 5, 1000 - 5, 5)
@@ -311,7 +350,7 @@ while st:
     Border(5, 500, 400, 500, True)
     Border(400, 500, 500, 500)
     Border(5, 5, 5, 600 - 5)
-    Border(500, 500, 500, 600 - 5) #АНТИ-МОНСТР
+    #Border(500, 500, 500, 600 - 5) #АНТИ-МОНСТР
     player = cat()
     Border(1000 - 5, 5, 1000 - 5, 600 - 5)
     while running:
@@ -341,10 +380,12 @@ while st:
                 elif event.key == pygame.K_w or event.key == pygame.K_s:
                     player.velocity.y = 0
         screen.fill(pygame.Color('white'))
-        if shot != None:
+        if shot is not None:
             shot.update()        
         player.update()
         enemys.update()
+        potions.update()
+        things.update()
         all_sprites.draw(screen)
         clock.tick(100)
         pygame.display.flip()
