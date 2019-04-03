@@ -1,6 +1,7 @@
 import pygame
 import os
 
+ 
 
 def load_image(name):
     fullname = os.path.join('data', name)
@@ -48,35 +49,105 @@ class AnimatedSprite(pygame.sprite.Sprite):
         
 
 def start_screen():
-    fon = load_image('заставка.png')
-    screen.blit(fon, (0, 0))
-    font = pygame.font.Font(None, 30)
+    screen.fill((0,0,0))
+    font = pygame.font.Font(None, 60)
+    font2 = pygame.font.Font(None, 50)
+    
+    game_name = font.render("НАЗВАНИЕ ИГРЫ", 1, (255, 255, 255))
+    start = font2.render("начать игру", 1, (255, 255, 255))
+    rules = font2.render("правила", 1, (255, 255, 255))
+    quit = font2.render("выйти", 1, (255, 255, 255))
+    start_d = font2.render("начать игру", 1, (0, 0, 0))
+    rules_d = font2.render("правила", 1, (0, 0, 0))
+    quit_d = font2.render("выйти", 1, (0, 0, 0))
+    
+    screen.blit(game_name, ((width - game_name.get_width()) // 2, 120))
+    screen.blit(start, ((width - start.get_width()) // 2, 230))
+    screen.blit(rules, ((width - rules.get_width()) // 2, 300))
+    screen.blit(quit, ((width - quit.get_width()) // 2, 370))
+    pos = None
     k = 0
+    st_game = True
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            elif event.type == pygame.MOUSEMOTION and st_game:
+                if event.pos[1] in range(230, 240 + start.get_height()):
+                    if pos != "s":
+                        sound1.play() 
+                        pygame.draw.rect(screen, (255, 204, 0), pygame.Rect(0, 230, width, start.get_height() + 10))
+                        screen.blit(start_d, ((width - start.get_width()) // 2, 230))
+                        pos = "s"
+                else:
+                    if pos == "s":
+                        pos = None
+                        pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(0, 230, width, start.get_height() + 10))
+                        screen.blit(start, ((width - start.get_width()) // 2, 230))
+                        
+                if event.pos[1] in range(300, 310 + rules.get_height()):
+                    if pos != "r":
+                        sound1.play() 
+                        pos = "r"
+                        pygame.draw.rect(screen, (255, 204, 0), pygame.Rect(0, 300, width, rules.get_height() + 10))
+                        screen.blit(rules_d, ((width - rules.get_width()) // 2, 300))
+                else:
+                    if pos == "r":
+                        pos = None
+                        pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(0, 300, width, rules.get_height() + 10))
+                        screen.blit(rules, ((width - rules.get_width()) // 2, 300))
+                        
+                if event.pos[1] in range(370, 380 + quit.get_height()):
+                    if pos != "q":
+                        sound1.play() 
+                        pos = "q"
+                        pygame.draw.rect(screen, (255, 204, 0), pygame.Rect(0, 370, width, quit.get_height() + 10))
+                        screen.blit(quit_d, ((width - quit.get_width()) // 2, 370))
+                else:
+                    if pos == "q":
+                        pos = None
+                        pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(0, 370, width, quit.get_height() + 10))
+                        screen.blit(quit, ((width - quit.get_width()) // 2, 370))
+                
+                    
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 # координаты кнопки
-                if event.pos[0] in range(316, 625) and event.pos[1] in range(260, 365):
+                if event.pos[1] in range(370, 380 + quit.get_height()) and st_game:
+                    pygame.quit()
+                    sys.exit()
+                elif event.pos[1] in range(230, 240 + start.get_height()):
+                    sound2.play()
+                    return
+                elif event.pos[1] in range(300, 310 + rules.get_height()):
+                    sound2.play() 
+                    st_game = False
                     k = 1
                     fon = load_image('rule' + str(k) + '.png')
                     screen.blit(fon, (0, 0))                    
                 if 0 < k < 3 and event.pos[0] in range(800, 960)\
                              and event.pos[1] in range(510, 543):
+                    sound2.play() 
                     k += 1
                     fon = load_image('rule' + str(k) + '.png')
                     screen.blit(fon, (0, 0))
                 elif k == 3:
                     if event.pos[0] in range(490, 561)\
                        and event.pos[1] in range(510, 540):
+                        sound3.play() 
                         k = 1
                         fon = load_image('rule' + str(k) + '.png')
                         screen.blit(fon, (0, 0))
                     elif event.pos[0] in range(795, 865)\
                        and event.pos[1] in range(510, 540):
-                        return
+                        sound3.play() 
+                        st_game = True
+                        screen.fill((0, 0, 0))
+                        screen.blit(game_name, ((width - game_name.get_width()) // 2, 120))
+                        screen.blit(start, ((width - start.get_width()) // 2, 230))
+                        screen.blit(rules, ((width - rules.get_width()) // 2, 300))
+                        screen.blit(quit, ((width - quit.get_width()) // 2, 370))
+                        k = 0
         pygame.display.flip()
         clock.tick(100)
 
@@ -102,7 +173,7 @@ def end_screen():
 
 
 class cat(AnimatedSprite):
-    def __init__(self, sheet=load_image("m_k1.png"), columns=7, rows=2, x=0, y=517, f=10):
+    def __init__(self, sheet=load_image("m_k1.png"), columns=7, rows=2, x=0, y=517, f=7):
         super().__init__(sheet, columns, rows, x, y, f)
         self.jump = 0
         self.down = False #спрыгивает ли игрок вниз, нажимая на "s"
@@ -121,7 +192,7 @@ class cat(AnimatedSprite):
         self.left.update(self.rect.x, self.rect.y)
     
     def update(self):
-        if self.nm == 2:
+        if self.nm == 5:
             global running
             running = False
         self.update_constraints()
@@ -129,7 +200,7 @@ class cat(AnimatedSprite):
         self.update_frame_dependent()
 
     def movement(self):
-        if self.velocity.y < 0 and self.jump != 50 and not pygame.sprite.spritecollideany(self.above, horizontal_borders):
+        if self.velocity.y < 0 and self.jump != 30 and not pygame.sprite.spritecollideany(self.above, horizontal_borders):
             self.jump += 1
             self.frames = []
             x, y = self.rect[:2]
@@ -157,7 +228,7 @@ class cat(AnimatedSprite):
         elif pygame.sprite.spritecollideany(self.left, vertical_borders) and self.velocity.x < 0 or\
              pygame.sprite.spritecollideany(self.right, vertical_borders) and self.velocity.x > 0:
             self.jump = 0
-            self.animation_frames = 10
+            self.animation_frames = 7
             self.velocity.y = 0
             self.frames = []
             x, y = self.rect[:2]
@@ -172,7 +243,7 @@ class cat(AnimatedSprite):
         else:
             self.down = False
             self.jump = 0
-            self.animation_frames = 10
+            self.animation_frames = 7
             self.velocity.y = 0
             self.frames = []
             x, y = self.rect[:2]
@@ -247,6 +318,7 @@ class potion(AnimatedSprite):
             player.count += 3
             all_sprites.remove(self)
             potions.remove(self)
+            sound4.play()
     
     def update(self):
         self.drink()
@@ -263,6 +335,7 @@ class thing(AnimatedSprite):
             player.nm += 1
             all_sprites.remove(self)
             things.remove(self)
+            sound4.play()
     
     def update(self):
         self.taking()
@@ -331,16 +404,22 @@ class Border(pygame.sprite.Sprite):
 st = True
 while st:
     pygame.init()
-    size = (1000, 600)
+    sound1 = pygame.mixer.Sound('sound/2.wav')
+    sound2 = pygame.mixer.Sound('sound/1.wav')
+    sound3 = pygame.mixer.Sound('sound/3.wav')
+    sound4 = pygame.mixer.Sound('sound/4.wav')
+    width, height = size = 900, 580
     running = True
+    
     screen = pygame.display.set_mode(size)
+    
     clock = pygame.time.Clock()
     shot = None
     all_sprites = pygame.sprite.Group()
-    #start_screen()
+    start_screen()
+    enemys = pygame.sprite.Group(enemy())
     things = pygame.sprite.Group(thing(load_image('t.png'), 300, 500),
                                  thing(load_image('t.png'), 700, 500))
-    enemys = pygame.sprite.Group(enemy())
     potions = pygame.sprite.Group(potion(400, 500))
     green_borders = pygame.sprite.Group()
     horizontal_borders = pygame.sprite.Group()
@@ -353,6 +432,8 @@ while st:
     #Border(500, 500, 500, 600 - 5) #АНТИ-МОНСТР
     player = cat()
     Border(1000 - 5, 5, 1000 - 5, 600 - 5)
+    fon = load_image('plan.png')
+    screen.blit(fon, (0, 0))
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -360,15 +441,15 @@ while st:
                 running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_d:
-                    player.velocity.x = 3
+                    player.velocity.x = 4
                     player.index = 0
                 elif event.key == pygame.K_a:
-                    player.velocity.x = -3
+                    player.velocity.x = -4
                     player.index = 0
                 elif event.key == pygame.K_s:
                     player.down = True
                 elif event.key == pygame.K_w:
-                    player.velocity.y = -2
+                    player.velocity.y = -4
                     player.index = 0
                 elif event.key == pygame.K_SPACE:
                     if shot == None and player.count > 0:
@@ -379,9 +460,10 @@ while st:
                     player.velocity.x = 0
                 elif event.key == pygame.K_w or event.key == pygame.K_s:
                     player.velocity.y = 0
-        screen.fill(pygame.Color('white'))
+        #screen.fill(pygame.Color('white'))
         if shot is not None:
-            shot.update()        
+            shot.update()
+        screen.blit(fon, (0, 0))
         player.update()
         enemys.update()
         potions.update()
