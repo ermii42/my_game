@@ -1,7 +1,6 @@
 import pygame
 import os
 
- 
 
 def load_image(name):
     fullname = os.path.join('data', name)
@@ -173,7 +172,7 @@ def end_screen():
 
 
 class cat(AnimatedSprite):
-    def __init__(self, sheet=load_image("m_k1.png"), columns=7, rows=2, x=0, y=517, f=7):
+    def __init__(self, sheet=load_image("m_k1.png"), columns=7, rows=2, x=0, y=480, f=7):
         super().__init__(sheet, columns, rows, x, y, f)
         self.jump = 0
         self.down = False #спрыгивает ли игрок вниз, нажимая на "s"
@@ -217,7 +216,7 @@ class cat(AnimatedSprite):
             self.rect = self.rect.move(x, y)
             self.animation_frames = 5
         elif not pygame.sprite.spritecollideany(self.below, horizontal_borders) and (
-            not pygame.sprite.spritecollideany(self.below, green_borders) or self.down ):
+            not pygame.sprite.spritecollideany(self.below, green_borders) or self.down):
             # Столкновение с горизонтальными стенками
             self.down = False
             if self.velocity.x != 0 and pygame.sprite.spritecollideany(self.right, vertical_borders) and self.velocity.x > 0 or\
@@ -344,7 +343,7 @@ class thing(AnimatedSprite):
 
 class kv(pygame.sprite.Sprite):
     def __init__(self, x, y, down=None, right=None):
-        super().__init__()
+        super().__init__(all_sprites)
         self.down = down
         self.right = right
         if self.down != None:
@@ -388,18 +387,19 @@ class Border(pygame.sprite.Sprite):
         #super().__init__()
         if ability:
             self.add(green_borders)
-            self.image = pygame.Surface([x2 - x1, 1])
-            self.rect = pygame.Rect(x1, y1, x2 - x1, 1)
+            self.image = pygame.Surface([x2 - x1, 2])
+            self.rect = pygame.Rect(x1, y1, x2 - x1, 2)
             self.image.fill(pygame.Color('green'))
         else:
             if x1 == x2:  # вертикальная стенка
                 self.add(vertical_borders)
-                self.image = pygame.Surface([1, y2 - y1])
-                self.rect = pygame.Rect(x1, y1, 1, y2 - y1)
+                self.image = pygame.Surface([3, y2 - y1])
+                self.rect = pygame.Rect(x1, y1, 3, y2 - y1)
             else:  # горизонтальная стенка
                 self.add(horizontal_borders)
-                self.image = pygame.Surface([x2 - x1, 1])
-                self.rect = pygame.Rect(x1, y1, x2 - x1, 1)
+                self.image = pygame.Surface([x2 - x1, 2])
+                self.rect = pygame.Rect(x1, y1, x2 - x1, 2)
+            self.image.fill(pygame.Color('red'))
 
 st = True
 while st:
@@ -416,7 +416,7 @@ while st:
     clock = pygame.time.Clock()
     shot = None
     all_sprites = pygame.sprite.Group()
-    start_screen()
+    #start_screen()
     enemys = pygame.sprite.Group(enemy())
     things = pygame.sprite.Group(thing(load_image('t.png'), 300, 500),
                                  thing(load_image('t.png'), 700, 500))
@@ -425,11 +425,23 @@ while st:
     horizontal_borders = pygame.sprite.Group()
     vertical_borders = pygame.sprite.Group()
     Border(5, 5, 1000 - 5, 5)
-    Border(5, 600 - 5, 1000 - 5, 600 - 5)
-    Border(5, 500, 400, 500, True)
-    Border(400, 500, 500, 500)
+    Border(5, 600 - 35, 1000 - 5, 600 - 35)
+    Border(112, 474, 290, 474, True)
+    Border(112, 392, 290, 392, True)
+    Border(112, 302, 290, 302, True)
+    Border(112, 218, 290, 218, True)
+    Border(112, 136, 290, 136, True)
+    Border(230, 474, 290, 474)
+    Border(240, 302, 290, 302)
+    Border(112, 302, 145, 302)
+
+    Border(112, 50, 290, 50)
+
+    Border(108, 50, 108, 474)
+    Border(290, 219, 290, 565)
+
+    Border(400, 450, 500, 450, True)
     Border(5, 5, 5, 600 - 5)
-    #Border(500, 500, 500, 600 - 5) #АНТИ-МОНСТР
     player = cat()
     Border(1000 - 5, 5, 1000 - 5, 600 - 5)
     fon = load_image('plan.png')
