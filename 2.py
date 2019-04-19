@@ -55,15 +55,12 @@ def start_screen():
     game_name = font.render("НАЗВАНИЕ ИГРЫ", 1, (255, 255, 255))
     start = font2.render("начать игру", 1, (255, 255, 255))
     rules = font2.render("правила", 1, (255, 255, 255))
-    output = font2.render("выйти", 1, (255, 255, 255))
-    start_d = font2.render("начать игру", 1, (0, 0, 0))
-    rules_d = font2.render("правила", 1, (0, 0, 0))
-    quit_d = font2.render("выйти", 1, (0, 0, 0))
+    quit = font2.render("выйти", 1, (255, 255, 255))
     
     screen.blit(game_name, ((width - game_name.get_width()) // 2, 120))
     screen.blit(start, ((width - start.get_width()) // 2, 230))
     screen.blit(rules, ((width - rules.get_width()) // 2, 300))
-    screen.blit(output, ((width - output.get_width()) // 2, 370))
+    screen.blit(quit, ((width - quit.get_width()) // 2, 370))
     pos = None
     k = 0
     st_game = True
@@ -75,37 +72,43 @@ def start_screen():
             elif event.type == pygame.MOUSEMOTION and st_game:
                 if event.pos[1] in range(230, 240 + start.get_height()):
                     if pos != "s":
-                        sound1.play() 
-                        pygame.draw.rect(screen, (255, 204, 0), pygame.Rect(0, 230, width, start.get_height() + 10))
-                        screen.blit(start_d, ((width - start.get_width()) // 2, 230))
+                        sound1.play()
                         pos = "s"
+                        start = font2.render("начать игру", 1, (0, 0, 0))
+                        pygame.draw.rect(screen, (255, 204, 0), pygame.Rect(0, 230, width, start.get_height() + 10))
+                        screen.blit(start, ((width - start.get_width()) // 2, 230))
                 else:
                     if pos == "s":
                         pos = None
+                        start = font2.render("начать игру", 1, (255, 255, 255))
                         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(0, 230, width, start.get_height() + 10))
                         screen.blit(start, ((width - start.get_width()) // 2, 230))
                         
                 if event.pos[1] in range(300, 310 + rules.get_height()):
                     if pos != "r":
-                        sound1.play() 
+                        sound1.play()
                         pos = "r"
+                        rules = font2.render("правила", 1, (0, 0, 0))
                         pygame.draw.rect(screen, (255, 204, 0), pygame.Rect(0, 300, width, rules.get_height() + 10))
-                        screen.blit(rules_d, ((width - rules.get_width()) // 2, 300))
+                        screen.blit(rules, ((width - rules.get_width()) // 2, 300))
                 else:
                     if pos == "r":
                         pos = None
+                        rules = font2.render("правила", 1, (255, 255, 255))
                         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(0, 300, width, rules.get_height() + 10))
                         screen.blit(rules, ((width - rules.get_width()) // 2, 300))
                         
                 if event.pos[1] in range(370, 380 + quit.get_height()):
                     if pos != "q":
-                        sound1.play() 
+                        sound1.play()
                         pos = "q"
+                        quit = font2.render("выйти", 1, (0, 0, 0))
                         pygame.draw.rect(screen, (255, 204, 0), pygame.Rect(0, 370, width, quit.get_height() + 10))
-                        screen.blit(quit_d, ((width - quit.get_width()) // 2, 370))
+                        screen.blit(quit, ((width - quit.get_width()) // 2, 370))
                 else:
                     if pos == "q":
                         pos = None
+                        quit = font2.render("выйти", 1, (255, 255, 255))
                         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(0, 370, width, quit.get_height() + 10))
                         screen.blit(quit, ((width - quit.get_width()) // 2, 370))
 
@@ -144,30 +147,65 @@ def start_screen():
                         screen.blit(game_name, ((width - game_name.get_width()) // 2, 120))
                         screen.blit(start, ((width - start.get_width()) // 2, 230))
                         screen.blit(rules, ((width - rules.get_width()) // 2, 300))
-                        screen.blit(output, ((width - quit.get_width()) // 2, 370))
+                        screen.blit(quit, ((width - quit.get_width()) // 2, 370))
                         k = 0
         pygame.display.flip()
         clock.tick(100)
 
 
-def end_screen():
+def end_screen(text):
     fond = load_image('end.png')
     screen.blit(fond, (0, 0))
-    font = pygame.font.Font(None, 30)
-    game_over = font.render("game over", 1, (255, 255, 255))
-    screen.blit(game_over, ((width - game_name.get_width()) // 2, 120))
+    font = pygame.font.Font(None, 80)
+    font2 = pygame.font.Font(None, 50)
+    game_text = font.render(text, 1, (255, 255, 255))
+    btn1 = font2.render("Главное меню", 1, (255, 255, 255))
+    btn2 = font2.render("Выход", 1, (255, 255, 255))
+    screen.blit(game_text, ((width - game_text.get_width()) // 2, 180))
+    screen.blit(btn1, ((width - btn1.get_width()) // 4, 325))
+    screen.blit(btn2, ((width - btn1.get_width()) // 10 * 9, 325))
+    s = True
+    bt = 0
 
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            #elif event.type == pygame.MOUSEBUTTONDOWN:
-                ## координаты кнопки
-                #if event.pos[0] in range(316, 625) and event.pos[1] in range(260, 365):
-                    #k = 1
-                    #fond = load_image('rule' + str(k) + '.png')
-                    #screen.blit(fond, (0, 0))                
+            elif event.type == pygame.MOUSEMOTION:
+                if event.pos[0] in range(155, 415) and event.pos[1] in range(320, 360):
+                    if s:
+                        s = False
+                        sound1.play()
+                    bt = 1
+                    btn1 = font2.render("Главное меню", 1, (255, 204, 0))
+                elif event.pos[0] in range(580, 710) and event.pos[1] in range(320, 360):
+                    if s:
+                        s = False
+                        sound1.play()
+                    bt = 2
+                    btn2 = font2.render("Выход", 1, (255, 204, 0))
+
+                elif (event.pos[0] not in range(155, 415) or event.pos[1] not in range(320, 360)) and bt == 1:
+                    s = True
+                    bt = 0
+                    btn1 = font2.render("Главное меню", 1, (255, 255, 255))
+                elif (event.pos[0] not in range(580, 710) or event.pos[1] not in range(320, 360)) and bt == 2:
+                    s = True
+                    bt = 0
+                    btn2 = font2.render("Выход", 1, (255, 255, 255))
+                screen.blit(btn1, ((width - btn1.get_width()) // 4, 325))
+                screen.blit(btn2, ((width - btn1.get_width()) // 10 * 9, 325))
+
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.pos[0] in range(155, 415) and event.pos[1] in range(320, 360):
+                    sound2.play()
+                    return
+                elif event.pos[0] in range(580, 710) and event.pos[1] in range(320, 360):
+                    global is_game
+                    is_game = False
+                    return
+
         pygame.display.flip()
         clock.tick(100)
 
@@ -351,7 +389,7 @@ class Object(AnimatedSprite):
 
 class PlayerConstraint(pygame.sprite.Sprite):
     def __init__(self, x, y, down=None, right=None):
-        super().__init__(all_sprites)
+        super().__init__()  # all_sprites)
         self.down = down
         self.right = right
         if self.down is not None:
@@ -424,7 +462,7 @@ while is_game:
     clock = pygame.time.Clock()
     shot = None
     all_sprites = pygame.sprite.Group()
-    # start_screen()
+    start_screen()
     enemies = pygame.sprite.Group(Enemy())
     things = pygame.sprite.Group(Object(load_image('t.png'), 300, 500),
                                  Object(load_image('t.png'), 700, 500))
@@ -493,5 +531,5 @@ while is_game:
         clock.tick(100)
         pygame.display.flip()
     if is_game:
-        end_screen()
+        end_screen("Конец 'игры', вы выиграли")
 pygame.quit()
