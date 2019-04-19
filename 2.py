@@ -48,14 +48,14 @@ class AnimatedSprite(pygame.sprite.Sprite):
         
 
 def start_screen():
-    screen.fill((0,0,0))
+    screen.fill((0, 0, 0))
     font = pygame.font.Font(None, 60)
     font2 = pygame.font.Font(None, 50)
     
     game_name = font.render("НАЗВАНИЕ ИГРЫ", 1, (255, 255, 255))
     start = font2.render("начать игру", 1, (255, 255, 255))
     rules = font2.render("правила", 1, (255, 255, 255))
-    quit = font2.render("выйти", 1, (255, 255, 255))
+    output = font2.render("выйти", 1, (255, 255, 255))
     start_d = font2.render("начать игру", 1, (0, 0, 0))
     rules_d = font2.render("правила", 1, (0, 0, 0))
     quit_d = font2.render("выйти", 1, (0, 0, 0))
@@ -63,7 +63,7 @@ def start_screen():
     screen.blit(game_name, ((width - game_name.get_width()) // 2, 120))
     screen.blit(start, ((width - start.get_width()) // 2, 230))
     screen.blit(rules, ((width - rules.get_width()) // 2, 300))
-    screen.blit(quit, ((width - quit.get_width()) // 2, 370))
+    screen.blit(output, ((width - output.get_width()) // 2, 370))
     pos = None
     k = 0
     st_game = True
@@ -108,8 +108,7 @@ def start_screen():
                         pos = None
                         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(0, 370, width, quit.get_height() + 10))
                         screen.blit(quit, ((width - quit.get_width()) // 2, 370))
-                
-                    
+
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 # координаты кнопки
                 if event.pos[1] in range(370, 380 + quit.get_height()) and st_game:
@@ -122,39 +121,41 @@ def start_screen():
                     sound2.play() 
                     st_game = False
                     k = 1
-                    fon = load_image('rule' + str(k) + '.png')
-                    screen.blit(fon, (0, 0))                    
+                    fond = load_image('rule' + str(k) + '.png')
+                    screen.blit(fond, (0, 0))                    
                 if 0 < k < 3 and event.pos[0] in range(800, 960)\
-                             and event.pos[1] in range(510, 543):
+                        and event.pos[1] in range(510, 543):
                     sound2.play() 
                     k += 1
-                    fon = load_image('rule' + str(k) + '.png')
-                    screen.blit(fon, (0, 0))
+                    fond = load_image('rule' + str(k) + '.png')
+                    screen.blit(fond, (0, 0))
                 elif k == 3:
                     if event.pos[0] in range(490, 561)\
                        and event.pos[1] in range(510, 540):
                         sound3.play() 
                         k = 1
-                        fon = load_image('rule' + str(k) + '.png')
-                        screen.blit(fon, (0, 0))
+                        fond = load_image('rule' + str(k) + '.png')
+                        screen.blit(fond, (0, 0))
                     elif event.pos[0] in range(795, 865)\
-                       and event.pos[1] in range(510, 540):
+                            and event.pos[1] in range(510, 540):
                         sound3.play() 
                         st_game = True
                         screen.fill((0, 0, 0))
                         screen.blit(game_name, ((width - game_name.get_width()) // 2, 120))
                         screen.blit(start, ((width - start.get_width()) // 2, 230))
                         screen.blit(rules, ((width - rules.get_width()) // 2, 300))
-                        screen.blit(quit, ((width - quit.get_width()) // 2, 370))
+                        screen.blit(output, ((width - quit.get_width()) // 2, 370))
                         k = 0
         pygame.display.flip()
         clock.tick(100)
 
 
 def end_screen():
-    fon = load_image('game_over.jpg')
-    screen.blit(fon, (0, 0))
+    fond = load_image('end.png')
+    screen.blit(fond, (0, 0))
     font = pygame.font.Font(None, 30)
+    game_over = font.render("game over", 1, (255, 255, 255))
+    screen.blit(game_over, ((width - game_name.get_width()) // 2, 120))
 
     while True:
         for event in pygame.event.get():
@@ -165,24 +166,25 @@ def end_screen():
                 ## координаты кнопки
                 #if event.pos[0] in range(316, 625) and event.pos[1] in range(260, 365):
                     #k = 1
-                    #fon = load_image('rule' + str(k) + '.png')
-                    #screen.blit(fon, (0, 0))                
+                    #fond = load_image('rule' + str(k) + '.png')
+                    #screen.blit(fond, (0, 0))                
         pygame.display.flip()
         clock.tick(100)
 
 
-class cat(AnimatedSprite):
+class Player(AnimatedSprite):
     def __init__(self, sheet=load_image("m_k1.png"), columns=7, rows=2, x=0, y=480, f=7):
         super().__init__(sheet, columns, rows, x, y, f)
         self.jump = 0
-        self.down = False #спрыгивает ли игрок вниз, нажимая на "s"
+        self.down = False  # спрыгивает ли игрок вниз, нажимая на "s"
         self.mask = pygame.mask.from_surface(self.image)
-        self.below = kv(self.rect.x, self.rect.y, down=True)
-        self.above = kv(self.rect.x, self.rect.y, down=False)
-        self.right = kv(self.rect.x, self.rect.y, right=True)
-        self.left = kv(self.rect.x, self.rect.y, right=False)
+        self.below = PlayerConstraint(self.rect.x, self.rect.y, down=True)
+        self.above = PlayerConstraint(self.rect.x, self.rect.y, down=False)
+        self.right = PlayerConstraint(self.rect.x, self.rect.y, right=True)
+        self.left = PlayerConstraint(self.rect.x, self.rect.y, right=False)
         self.count = 0
         self.nm = 0
+        self.lives = 1
     
     def update_constraints(self):
         self.below.update(self.rect.x, self.rect.y)
@@ -199,7 +201,11 @@ class cat(AnimatedSprite):
         self.update_frame_dependent()
 
     def movement(self):
-        if self.velocity.y < 0 and self.jump != 30 and not pygame.sprite.spritecollideany(self.above, horizontal_borders):
+        if self.lives == 0:
+            global running
+            running = False
+        if self.velocity.y < 0 and self.jump != 30\
+                and not pygame.sprite.spritecollideany(self.above, horizontal_borders):
             self.jump += 1
             self.frames = []
             x, y = self.rect[:2]
@@ -209,23 +215,25 @@ class cat(AnimatedSprite):
                     self.velocity.x = 0 
                 self.left_turn = True
             else:
-                if pygame.sprite.spritecollideany(self.right, vertical_borders) and self.velocity.x>0:
+                if pygame.sprite.spritecollideany(self.right, vertical_borders) and self.velocity.x > 0:
                     self.velocity.x = 0                 
                 self.left_turn = False  
             self.cut_sheet(sheet, 5, 2)
             self.rect = self.rect.move(x, y)
             self.animation_frames = 5
+
         elif not pygame.sprite.spritecollideany(self.below, horizontal_borders) and (
-            not pygame.sprite.spritecollideany(self.below, green_borders) or self.down):
+                not pygame.sprite.spritecollideany(self.below, green_borders) or self.down):
             # Столкновение с горизонтальными стенками
             self.down = False
-            if self.velocity.x != 0 and pygame.sprite.spritecollideany(self.right, vertical_borders) and self.velocity.x > 0 or\
-                pygame.sprite.spritecollideany(self.left, vertical_borders) and self.velocity.x < 0:
+            self.velocity.y = 3
+            if self.velocity.x != 0 and pygame.sprite.spritecollideany(self.right, vertical_borders)\
+                    and self.velocity.x > 0 or pygame.sprite.spritecollideany(self.left, vertical_borders)\
+                    and self.velocity.x < 0:
                 self.velocity.x = 0
             self.index = 7
-            self.velocity.y = 2
         elif pygame.sprite.spritecollideany(self.left, vertical_borders) and self.velocity.x < 0 or\
-             pygame.sprite.spritecollideany(self.right, vertical_borders) and self.velocity.x > 0:
+                pygame.sprite.spritecollideany(self.right, vertical_borders) and self.velocity.x > 0:
             self.jump = 0
             self.animation_frames = 7
             self.velocity.y = 0
@@ -258,7 +266,7 @@ class cat(AnimatedSprite):
             self.rect = self.rect.move(x, y)
 
     
-class fireball(AnimatedSprite):
+class Fireball(AnimatedSprite):
     def __init__(self, x, y, sheet=load_image("cn.png"), columns=1, rows=1, f=10):
         super().__init__(sheet, columns, rows, x + 20, y + 20, f)
         if player.left_turn:
@@ -276,7 +284,7 @@ class fireball(AnimatedSprite):
             shot = None
 
 
-class enemy(AnimatedSprite):
+class Enemy(AnimatedSprite):
     def __init__(self, sheet=load_image("en.png"), columns=1, rows=1, x=500, y=500, f=10):
         super().__init__(sheet, columns, rows, x, y, f)
         self.velocity.x = -1
@@ -287,12 +295,12 @@ class enemy(AnimatedSprite):
         if pygame.sprite.collide_mask(self, shot):
             all_sprites.remove(shot)
             all_sprites.remove(self)
-            enemys.remove(self)
+            enemies.remove(self)
             shot = None
         
     def update(self):
         global shot
-        if shot != None:
+        if shot is not None:
             self.death()
         if pygame.sprite.collide_mask(self, player):
             global running
@@ -307,7 +315,7 @@ class enemy(AnimatedSprite):
         self.update_frame_dependent()
 
 
-class potion(AnimatedSprite):
+class Potion(AnimatedSprite):
     def __init__(self, x, y, sheet=load_image("p.png"), columns=1, rows=1, f=10):
         super().__init__(sheet, columns, rows, x, y, f)
         self.mask = pygame.mask.from_surface(self.image)
@@ -324,7 +332,7 @@ class potion(AnimatedSprite):
         self.update_frame_dependent()
 
 
-class thing(AnimatedSprite):
+class Object(AnimatedSprite):
     def __init__(self, sheet, x, y, columns=1, rows=1, f=10):
         super().__init__(sheet, columns, rows, x, y, f)
         self.mask = pygame.mask.from_surface(self.image)
@@ -341,12 +349,12 @@ class thing(AnimatedSprite):
         self.update_frame_dependent()    
 
 
-class kv(pygame.sprite.Sprite):
+class PlayerConstraint(pygame.sprite.Sprite):
     def __init__(self, x, y, down=None, right=None):
         super().__init__(all_sprites)
         self.down = down
         self.right = right
-        if self.down != None:
+        if self.down is not None:
             if self.down:
                 self.image = pygame.Surface([100 - 10, 2])
                 self.rect = pygame.Rect(x + 5, y + 78, 100 - 10, 2)
@@ -362,7 +370,7 @@ class kv(pygame.sprite.Sprite):
                 self.rect = pygame.Rect(x + 4, y + 16, 2, 100 - 37)
     
     def update(self, x1, y1):
-        if self.down != None:
+        if self.down is not None:
             if self.down:
                 x1 += 5
                 y1 += 78
@@ -383,8 +391,7 @@ class kv(pygame.sprite.Sprite):
 class Border(pygame.sprite.Sprite):
     # строго вертикальный или строго горизонтальный отрезок
     def __init__(self, x1, y1, x2, y2, ability=False):
-        super().__init__(all_sprites)
-        #super().__init__()
+        super().__init__()  # all_sprites)
         if ability:
             self.add(green_borders)
             self.image = pygame.Surface([x2 - x1, 2])
@@ -401,8 +408,9 @@ class Border(pygame.sprite.Sprite):
                 self.rect = pygame.Rect(x1, y1, x2 - x1, 2)
             self.image.fill(pygame.Color('red'))
 
-st = True
-while st:
+
+is_game = True
+while is_game:
     pygame.init()
     sound1 = pygame.mixer.Sound('sound/2.wav')
     sound2 = pygame.mixer.Sound('sound/1.wav')
@@ -416,11 +424,11 @@ while st:
     clock = pygame.time.Clock()
     shot = None
     all_sprites = pygame.sprite.Group()
-    #start_screen()
-    enemys = pygame.sprite.Group(enemy())
-    things = pygame.sprite.Group(thing(load_image('t.png'), 300, 500),
-                                 thing(load_image('t.png'), 700, 500))
-    potions = pygame.sprite.Group(potion(400, 500))
+    # start_screen()
+    enemies = pygame.sprite.Group(Enemy())
+    things = pygame.sprite.Group(Object(load_image('t.png'), 300, 500),
+                                 Object(load_image('t.png'), 700, 500))
+    potions = pygame.sprite.Group(Potion(400, 500))
     green_borders = pygame.sprite.Group()
     horizontal_borders = pygame.sprite.Group()
     vertical_borders = pygame.sprite.Group()
@@ -442,19 +450,21 @@ while st:
 
     Border(400, 450, 500, 450, True)
     Border(5, 5, 5, 600 - 5)
-    player = cat()
+    player = Player()
     Border(1000 - 5, 5, 1000 - 5, 600 - 5)
-    fon = load_image('plan.png')
-    screen.blit(fon, (0, 0))
+    fond = load_image('plan.png')
+    screen.blit(fond, (0, 0))
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                st = False
+                is_game = False
                 running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_d:
                     player.velocity.x = 4
                     player.index = 0
+                elif event.key == pygame.K_1:
+                    player.lives = 0
                 elif event.key == pygame.K_a:
                     player.velocity.x = -4
                     player.index = 0
@@ -464,25 +474,24 @@ while st:
                     player.velocity.y = -4
                     player.index = 0
                 elif event.key == pygame.K_SPACE:
-                    if shot == None and player.count > 0:
-                        shot = fireball(*player.rect[:2])
+                    if shot is None and player.count > 0:
+                        shot = Fireball(*player.rect[:2])
                         player.count -= 1
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_d or event.key == pygame.K_a:
                     player.velocity.x = 0
                 elif event.key == pygame.K_w or event.key == pygame.K_s:
                     player.velocity.y = 0
-        #screen.fill(pygame.Color('white'))
         if shot is not None:
             shot.update()
-        screen.blit(fon, (0, 0))
+        screen.blit(fond, (0, 0))
         player.update()
-        enemys.update()
+        enemies.update()
         potions.update()
         things.update()
         all_sprites.draw(screen)
         clock.tick(100)
         pygame.display.flip()
-    if st:
+    if is_game:
         end_screen()
 pygame.quit()
