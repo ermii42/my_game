@@ -210,7 +210,7 @@ def end_screen(text):
         clock.tick(100)
 
 
-def pannel(lives, fireballs, things):
+def pannel(lives, fireballs):
     im1 = load_image('heart.png')
     im2 = load_image('ball.png')
     screen.blit(im1, (80, 5))
@@ -223,6 +223,13 @@ def pannel(lives, fireballs, things):
 
 
 class Player(AnimatedSprite):
+    """
+    класс " игрок "
+    функции:
+    update_constraints
+    update
+    movement
+    """
     def __init__(self, sheet=load_image("m_k1.png"), columns=7, rows=2, x=0, y=480, f=7):
         super().__init__(sheet, columns, rows, x, y, f)
         self.jump = 0
@@ -243,7 +250,7 @@ class Player(AnimatedSprite):
         self.left.update(self.rect.x, self.rect.y)
     
     def update(self):
-        if self.nm == 5:
+        if self.nm == 2:
             global running
             running = False
         self.update_constraints()
@@ -315,7 +322,7 @@ class Player(AnimatedSprite):
                 self.cut_sheet(load_image("m_k1.png"), 7, 2)
             self.rect = self.rect.move(x, y)
 
-    
+
 class Fireball(AnimatedSprite):
     def __init__(self, x, y, sheet=load_image("cn.png"), columns=1, rows=1, f=10):
         super().__init__(sheet, columns, rows, x + 20, y + 20, f)
@@ -335,7 +342,7 @@ class Fireball(AnimatedSprite):
 
 
 class Enemy(AnimatedSprite):
-    def __init__(self, sheet=load_image("en.png"), columns=1, rows=1, x=500, y=500, f=10):
+    def __init__(self, sheet=load_image("en.png"), columns=1, rows=1, x=375, y=491, f=10):
         super().__init__(sheet, columns, rows, x, y, f)
         self.velocity.x = -1
         self.mask = pygame.mask.from_surface(self.image)
@@ -400,12 +407,12 @@ class Object(AnimatedSprite):
     
     def update(self):
         self.taking()
-        self.update_frame_dependent()    
+        self.update_frame_dependent()
 
 
 class PlayerConstraint(pygame.sprite.Sprite):
     def __init__(self, x, y, down=None, right=None):
-        super().__init__(all_sprites)
+        super().__init__()  # all_sprites)
         self.down = down
         self.right = right
         if self.down is not None:
@@ -445,7 +452,7 @@ class PlayerConstraint(pygame.sprite.Sprite):
 class Border(pygame.sprite.Sprite):
     # строго вертикальный или строго горизонтальный отрезок
     def __init__(self, x1, y1, x2, y2, ability=False):
-        super().__init__(all_sprites)
+        super().__init__()  # all_sprites)
         if ability:
             self.add(green_borders)
             self.image = pygame.Surface([x2 - x1, 2])
@@ -478,11 +485,11 @@ while is_game:
     clock = pygame.time.Clock()
     shot = None
     all_sprites = pygame.sprite.Group()
-    # start_screen()
+    start_screen()
     enemies = pygame.sprite.Group(Enemy())
     things = pygame.sprite.Group(Object(load_image('t.png'), 300, 500),
                                  Object(load_image('t.png'), 700, 500))
-    potions = pygame.sprite.Group(Potion(400, 500))
+    potions = pygame.sprite.Group(Potion(375, 130))
     green_borders = pygame.sprite.Group()
     horizontal_borders = pygame.sprite.Group()
     vertical_borders = pygame.sprite.Group()
@@ -509,12 +516,12 @@ while is_game:
         Border(228, 392, 290, 392)
         Border(227, 395, 227, 475)
         Border(144, 219, 144, 303)
-        Border(110, 218, 181, 218)
-        Border(180, 138, 180, 219)
-        Border(110, 136, 181, 136)
+        Border(110, 218, 170, 218)
+        Border(170, 138, 170, 219)
+        Border(110, 136, 170, 136)
         Border(228, 476, 228, 566)
         Border(270, 219, 270, 303)
-        Border(270, 218, 292, 218)
+        Border(273, 218, 292, 218)
 
         # стол
         Border(385, 215, 455, 215, True)
@@ -527,8 +534,18 @@ while is_game:
         Border(466, 368, 466, 438)
         # Border()
         # третий шкаф
-        Border(545, 367, 720, 367, True)
-        Border(548, 81, 548, 276)
+        Border(544, 81, 544, 276)
+        Border(544, 368, 544, 565)
+        Border(545, 464, 730, 464)
+        Border(545, 271, 673, 271)
+        Border(672, 175, 672, 271)
+        Border(545, 173, 672, 173)
+        Border(658, 81, 658, 171)
+        Border(545, 81, 730, 81)
+        Border(545, 367, 730, 367, True)
+        Border(673, 271, 730, 271, True)
+        Border(672, 173, 805, 173, True)
+
 
     player = Player()
     fond = load_image('plan.png')
@@ -566,7 +583,7 @@ while is_game:
         if shot is not None:
             shot.update()
         screen.blit(fond, (0, 0))
-        pannel(player.lives, player.count, 1)
+        pannel(player.lives, player.count)
         player.update()
         enemies.update()
         potions.update()
