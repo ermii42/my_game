@@ -45,18 +45,18 @@ class AnimatedSprite(pygame.sprite.Sprite):
             self.index = (self.index + 1) % len(self.frames)
             self.image = self.frames[self.index]
         self.rect.move_ip(self.velocity)
-        
+
 
 def start_screen():
     screen.fill((0, 0, 0))
     font = pygame.font.Font(None, 60)
     font2 = pygame.font.Font(None, 50)
-    
+
     game_name = font.render("НАЗВАНИЕ ИГРЫ", 1, (255, 255, 255))
     start = font2.render("начать игру", 1, (255, 255, 255))
     rules = font2.render("правила", 1, (255, 255, 255))
     quit = font2.render("выйти", 1, (255, 255, 255))
-    
+
     screen.blit(game_name, ((width - game_name.get_width()) // 2, 120))
     screen.blit(start, ((width - start.get_width()) // 2, 230))
     screen.blit(rules, ((width - rules.get_width()) // 2, 300))
@@ -83,7 +83,7 @@ def start_screen():
                         start = font2.render("начать игру", 1, (255, 255, 255))
                         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(0, 230, width, start.get_height() + 10))
                         screen.blit(start, ((width - start.get_width()) // 2, 230))
-                        
+
                 if event.pos[1] in range(300, 310 + rules.get_height()):
                     if pos != "r":
                         sound1.play()
@@ -97,7 +97,7 @@ def start_screen():
                         rules = font2.render("правила", 1, (255, 255, 255))
                         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(0, 300, width, rules.get_height() + 10))
                         screen.blit(rules, ((width - rules.get_width()) // 2, 300))
-                        
+
                 if event.pos[1] in range(370, 380 + quit.get_height()):
                     if pos != "q":
                         sound1.play()
@@ -121,27 +121,27 @@ def start_screen():
                     sound2.play()
                     return
                 elif event.pos[1] in range(300, 310 + rules.get_height()):
-                    sound2.play() 
+                    sound2.play()
                     st_game = False
                     k = 1
                     fond = load_image('rule' + str(k) + '.png')
-                    screen.blit(fond, (0, 0))                    
+                    screen.blit(fond, (0, 0))
                 if 0 < k < 3 and event.pos[0] in range(800, 960)\
                         and event.pos[1] in range(510, 543):
-                    sound2.play() 
+                    sound2.play()
                     k += 1
                     fond = load_image('rule' + str(k) + '.png')
                     screen.blit(fond, (0, 0))
                 elif k == 3:
                     if event.pos[0] in range(490, 561)\
                        and event.pos[1] in range(510, 540):
-                        sound3.play() 
+                        sound3.play()
                         k = 1
                         fond = load_image('rule' + str(k) + '.png')
                         screen.blit(fond, (0, 0))
                     elif event.pos[0] in range(795, 865)\
                             and event.pos[1] in range(510, 540):
-                        sound3.play() 
+                        sound3.play()
                         st_game = True
                         screen.fill((0, 0, 0))
                         screen.blit(game_name, ((width - game_name.get_width()) // 2, 120))
@@ -210,6 +210,18 @@ def end_screen(text):
         clock.tick(100)
 
 
+def pannel(lives, fireballs, things):
+    im1 = load_image('heart.png')
+    im2 = load_image('ball.png')
+    screen.blit(im1, (80, 5))
+    screen.blit(im2, (230, 5))
+    font = pygame.font.Font(None, 40)
+    live = font.render('x' + str(lives), 1, (255, 255, 255))
+    ball = font.render('x' + str(fireballs), 1, (255, 255, 255))
+    screen.blit(live, (135, 10))
+    screen.blit(ball, (285, 10))
+
+
 class Player(AnimatedSprite):
     def __init__(self, sheet=load_image("m_k1.png"), columns=7, rows=2, x=0, y=480, f=7):
         super().__init__(sheet, columns, rows, x, y, f)
@@ -222,7 +234,7 @@ class Player(AnimatedSprite):
         self.left = PlayerConstraint(self.rect.x, self.rect.y, right=False)
         self.count = 0
         self.nm = 0
-        self.lives = 1
+        self.lives = 3
     
     def update_constraints(self):
         self.below.update(self.rect.x, self.rect.y)
@@ -327,6 +339,7 @@ class Enemy(AnimatedSprite):
         super().__init__(sheet, columns, rows, x, y, f)
         self.velocity.x = -1
         self.mask = pygame.mask.from_surface(self.image)
+        self.n = 40
     
     def death(self):
         global shot
@@ -341,8 +354,11 @@ class Enemy(AnimatedSprite):
         if shot is not None:
             self.death()
         if pygame.sprite.collide_mask(self, player):
-            global running
-            running = False        
+            if self.n == 40:
+                player.lives -= 1
+                self.n = 0
+            else:
+                self.n += 1
         if pygame.sprite.spritecollideany(self, vertical_borders):
             self.frames = []
             self.velocity.x *= -1
@@ -389,7 +405,7 @@ class Object(AnimatedSprite):
 
 class PlayerConstraint(pygame.sprite.Sprite):
     def __init__(self, x, y, down=None, right=None):
-        super().__init__()  # all_sprites)
+        super().__init__(all_sprites)
         self.down = down
         self.right = right
         if self.down is not None:
@@ -429,7 +445,7 @@ class PlayerConstraint(pygame.sprite.Sprite):
 class Border(pygame.sprite.Sprite):
     # строго вертикальный или строго горизонтальный отрезок
     def __init__(self, x1, y1, x2, y2, ability=False):
-        super().__init__()  # all_sprites)
+        super().__init__(all_sprites)
         if ability:
             self.add(green_borders)
             self.image = pygame.Surface([x2 - x1, 2])
@@ -462,7 +478,7 @@ while is_game:
     clock = pygame.time.Clock()
     shot = None
     all_sprites = pygame.sprite.Group()
-    start_screen()
+    # start_screen()
     enemies = pygame.sprite.Group(Enemy())
     things = pygame.sprite.Group(Object(load_image('t.png'), 300, 500),
                                  Object(load_image('t.png'), 700, 500))
@@ -470,26 +486,51 @@ while is_game:
     green_borders = pygame.sprite.Group()
     horizontal_borders = pygame.sprite.Group()
     vertical_borders = pygame.sprite.Group()
-    Border(5, 5, 1000 - 5, 5)
-    Border(5, 600 - 35, 1000 - 5, 600 - 35)
-    Border(112, 474, 290, 474, True)
-    Border(112, 392, 290, 392, True)
-    Border(112, 302, 290, 302, True)
-    Border(112, 218, 290, 218, True)
-    Border(112, 136, 290, 136, True)
-    Border(230, 474, 290, 474)
-    Border(240, 302, 290, 302)
-    Border(112, 302, 145, 302)
+    if True:  # стенки
+        # дефолтные стенки
+        Border(5, 5, 900 - 5, 5)
+        Border(5, 565, 900 - 5, 565)
+        Border(5, 5, 5, 565)
+        Border(900 - 5, 5, 900 - 5, 565)
 
-    Border(112, 50, 290, 50)
+        # первый шкаф
+        Border(112, 474, 290, 474, True)
+        Border(112, 392, 290, 392, True)
+        Border(112, 302, 290, 302, True)
+        Border(112, 218, 290, 218, True)
+        Border(112, 136, 290, 136, True)
+        Border(230, 474, 290, 474)
+        Border(243, 302, 290, 302)
+        Border(112, 302, 145, 302)
+        Border(112, 50, 290, 50)
+        Border(108, 50, 108, 475)
+        Border(290, 219, 290, 565)
+        Border(240, 305, 240, 393)
+        Border(228, 392, 290, 392)
+        Border(227, 395, 227, 475)
+        Border(144, 219, 144, 303)
+        Border(110, 218, 181, 218)
+        Border(180, 138, 180, 219)
+        Border(110, 136, 181, 136)
+        Border(228, 476, 228, 566)
+        Border(270, 219, 270, 303)
+        Border(270, 218, 292, 218)
 
-    Border(108, 50, 108, 474)
-    Border(290, 219, 290, 565)
+        # стол
+        Border(385, 215, 455, 215, True)
+        Border(455, 117, 455, 215)
+        Border(455, 115, 520, 115)
+        Border(290, 445, 515, 445, True)
+        Border(512, 445, 512, 563)
+        Border(428, 445, 515, 445)
+        Border(469, 367, 545, 367)
+        Border(466, 368, 466, 438)
+        # Border()
+        # третий шкаф
+        Border(545, 367, 720, 367, True)
+        Border(548, 81, 548, 276)
 
-    Border(400, 450, 500, 450, True)
-    Border(5, 5, 5, 600 - 5)
     player = Player()
-    Border(1000 - 5, 5, 1000 - 5, 600 - 5)
     fond = load_image('plan.png')
     screen.blit(fond, (0, 0))
     while running:
@@ -515,6 +556,8 @@ while is_game:
                     if shot is None and player.count > 0:
                         shot = Fireball(*player.rect[:2])
                         player.count -= 1
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                print(event.pos)
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_d or event.key == pygame.K_a:
                     player.velocity.x = 0
@@ -523,13 +566,18 @@ while is_game:
         if shot is not None:
             shot.update()
         screen.blit(fond, (0, 0))
+        pannel(player.lives, player.count, 1)
         player.update()
         enemies.update()
         potions.update()
         things.update()
         all_sprites.draw(screen)
-        clock.tick(100)
+        clock.tick(120)
         pygame.display.flip()
     if is_game:
-        end_screen("Конец 'игры', вы выиграли")
+        if player.lives == 0:
+            text = "Конец 'игры', вы проиграли"
+        else:
+            text = "Конец 'игры', вы выиграли"
+        end_screen(text)
 pygame.quit()
