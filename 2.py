@@ -262,7 +262,7 @@ def panel(lives, fireballs):
 
 class Player(AnimatedSprite):
     """
-    класс " игрок "
+    класс "игрок"
     функции:
     update_constraints
     update
