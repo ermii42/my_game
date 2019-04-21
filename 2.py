@@ -243,7 +243,7 @@ def end_screen(text):
 def panel(lives, fireballs):
     """
     функция панель создает прямоугольник черного цвета
-    и отображает на нем жизни и ко-во оставшихся выстрелов игрока
+    и отображает на нем жизни и кол-во оставшихся выстрелов игрока
     :param lives:
     :param fireballs:
     """
@@ -396,7 +396,7 @@ class Fireball(AnimatedSprite):
 
     def update(self):
         """
-        функция оюновляет положение снаряда и проверяет его на столкновения в другими обЪектами
+        функция оюновляет положение снаряда и проверяет его на столкновения с другими обЪектами
         если происходит столкновние, то он исчезает
         """
         if not pygame.sprite.spritecollideany(self, vertical_borders):
@@ -455,8 +455,8 @@ class Enemy(AnimatedSprite):
 class Potion(AnimatedSprite):
     """
     класс зелье
-    нужно для пополнение игроком снарядов
-    после приминения исчезает
+    нужно для пополнения игроком снарядов
+    после применения исчезает
     """
     def __init__(self, x, y, sheet=load_image("p.png"), columns=1, rows=1, f=10):
         super().__init__(sheet, columns, rows, x, y, f)
@@ -491,7 +491,7 @@ class Object(AnimatedSprite):
     def taking(self):
         """
         проверяет столкновение с игроком
-        если оно произошло, о на счете у игрока добавляется +1 предмет
+        если оно произошло, то на счете у игрока добавляется +1 предмет
         """
         if pygame.sprite.collide_mask(self, player):
             player.nm += 1
@@ -599,7 +599,7 @@ def resetting_parameters(x, y, t):
     all_sprites.remove(things, enemies, potions, horizontal_borders, vertical_borders, green_borders)
     for group in [enemies, things, potions, horizontal_borders, vertical_borders, green_borders]:
         group.empty()
-    player.velocity = pygame.math.Vector2(0, 0)
+    player.velocity = pygame.math.Vector2()
     player.things_on_map = t
     player.spawn(x, y)
     player.lives = 3
